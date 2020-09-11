@@ -9,16 +9,23 @@
 				width: 0;
 				height: 0;
 			}
+
 			#myIframe2 {
 				border: 1px solid red;
 				display: none;
 			}
+
 			#myIframe3 {
 				border: 1px solid green;
 				visibility: hidden;
 			}
+
 			#programmaticIframe {
 				border: 1px solid yellow;
+			}
+
+			#myIframe4 {
+				border: 1px solid pink;
 			}
 		</style>
 	</head>
@@ -37,13 +44,16 @@
 		visibility:hidden:
 		<br />
 		<iframe id="myIframe3" src="inner.html"></iframe>
+		<br />
+		Iframe Without src tag
+		<iframe id="myIframe4"></iframe>
 		taken off-dom while loading:
 		<br />
-
 		<script>
 			var myIframe1 = document.getElementById('myIframe1');
 			var myIframe2 = document.getElementById('myIframe2');
 			var myIframe3 = document.getElementById('myIframe3');
+			var myIframe4 = document.getElementById('myIframe4');
 			var programmaticIframe = document.createElement('iframe');
 			programmaticIframe.id = 'programmaticIframe';
 			programmaticIframe.src = 'inner.html';
@@ -56,7 +66,13 @@
 
 			setTimeout(function () {
 				document.body.appendChild(programmaticIframe);
-				[myIframe1, myIframe2, myIframe3, programmaticIframe].forEach(reveal);
+				[
+					myIframe1,
+					myIframe2,
+					myIframe3,
+					programmaticIframe,
+					myIframe4
+				].forEach(reveal);
 			}, 3000);
 
 			function reveal(iframe) {
@@ -65,6 +81,50 @@
 				iframe.style.display = 'block';
 				iframe.style.visibility = 'visible';
 			}
+			myIframe4.onload = function () {
+				const longText = `function x() {\n\tconsole.log("Hello world!");\n}function x()
+			{\n\tconsole.log("Hello world!");\n}function x() {\n\tconsole.log("Hello world!");\n}function x()
+			{\n\tconsole.log("Hello world!");\n}function x() {\n\tconsole.log("Hello world!");\n}function x()
+			{\n\tconsole.log("Hello world!");\n}function x() {\n\tconsole.log("Hello world!");\n}function x()
+			{\n\tconsole.log("Hello world!");\n}function x() {\n\tconsole.log("Hello world!");\n}function x()
+			{\n\tconsole.log("Hello world!");\n}function x() {\n\tconsole.log("Hello world!");\n}function x()
+			{\n\tconsole.log("Hello world!");\n}function x() {\n\tconsole.log("Hello world!");\n}function x()
+			{\n\tconsole.log("Hello world!");\n}function x() {\n\tconsole.log("Hello world!");\n}function x()
+			{\n\tconsole.log("Hello world!");\n}function x() {\n\tconsole.log("Hello world!");\n}function x()
+			{\n\tconsole.log("Hello world!");\n}function x() {\n\tconsole.log("Hello world!");\n}function x()
+			{\n\tconsole.log("Hello world!");\n}`;
+				const iframeDoc = myIframe4.contentDocument;
+				const iframeWin = myIframe4.contentWindow;
+				const injectSourceFiles = function () {
+					iframeWin.require.config({
+						paths: {
+							vs: '../node_modules/monaco-editor/min/vs'
+						}
+					});
+
+					iframeWin.require(['vs/editor/editor.main'], function () {
+						const container = iframeDoc.createElement('div');
+						container.setAttribute('id', 'container');
+						container.style.height = '100vh';
+						iframeDoc.body.appendChild(container);
+						var editor = iframeWin.monaco.editor.create(
+							iframeDoc.getElementById('container'),
+							{
+								value: longText,
+								language: 'javascript'
+							}
+						);
+
+						iframeWin.onresize = function () {
+							editor.layout();
+						};
+					});
+				};
+				const script = iframeDoc.createElement('script');
+				script.src = '../node_modules/monaco-editor/min/vs/loader.js';
+				script.onload = injectSourceFiles;
+				iframeDoc.head.appendChild(script);
+			};
 		</script>
 	</body>
 </html>
